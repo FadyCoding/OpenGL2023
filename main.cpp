@@ -1,77 +1,45 @@
-#include<iostream>
-#include<glad/glad.h>
-#include<GLFW/glfw3.h>
 #include<filesystem>
 namespace fs = std::filesystem;
 
-#include<glm/glm.hpp>						  
-#include<glm/gtc/matrix_transform.hpp>		 
-#include<glm/gtc/type_ptr.hpp>
-#include<stb/stb_image.h>
+#include"Model.h"
 
 
-#include"Texture.h"
-#include"shaderClass.h"
-#include"VAO.h"
-#include"VBO.h"
-#include"IBO.h"
-#include"Camera.h"
+const unsigned int width = 1920;
+const unsigned int height = 1080;
 
+float cubeSize = 20.0f;
 
- 
-/*
- GLfloat vertices[] =
-{// Coordinates								//Colors
-	-0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, 0.0f, 0.0f, 1.0f, // Lower left corner
-	0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, 1.0f, 0.0f, 0.0f, // Lower right corner
-	0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f, 0.0f, 1.0f, 0.0f, // Upper corner
-	-0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f, 1.0f, 0.0f, 1.0f, // Inner left
-	0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f, 1.0f, 0.0f, 1.0f, // Inner right
-	0.0f, -0.5f * float(sqrt(3)) / 3, 0.0f, 1.0f, 0.0f, 1.0f // Inner down
-};
+float halfSize = cubeSize / 2.0f;
 
-GLuint indices[] =
-{
-	0, 3, 5, // Lower left triangle
-	3, 2, 4, // Lower right triangle
-	5, 4, 1 // Upper triangle
-};
-*/
+glm::vec3 minPosition(-halfSize, -halfSize, -halfSize);
+glm::vec3 maxPosition(halfSize, halfSize, halfSize);
 
-const unsigned int width = 800;
-const unsigned int height = 800;
-
-//Sphere
-//Sphere Sphere1(1.0f, 1, 1);
-//glimac::Sphere s1(1.0f, 1, 1);
-
-
-
-
-
-//Pyramid
-// Vertices coordinates
-GLfloat vertices[] =
-{// Coordinates			 //Colors					//Texture Coordinates
-	-0.5f, 0.0f, 0.5f,  0.83f, 0.70f, 0.44f,		0.0f, 0.0f,			
-	-0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f,		5.0f, 0.0f,
-	0.5f, 0.0f, -0.5f,  0.83f, 0.70f, 0.44f,		1.0f, 1.0f,
-	0.5f, 0.0f, 0.5f,   0.83f, 0.70f, 0.44f,		5.0f, 0.0f,
-	0.0f, 0.8f, 0.0f,   0.92f, 0.86f, 0.76f,		2.5f, 5.0f
+std::vector<Vertex> cubeVertices = {
+	// Face avant
+	{ { minPosition.x, minPosition.y, minPosition.z }, { 0.0f, 0.0f, -1.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f } },
+	{ { maxPosition.x, minPosition.y, minPosition.z }, { 0.0f, 0.0f, -1.0f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 0.0f } },
+	{ { maxPosition.x, maxPosition.y, minPosition.z }, { 0.0f, 0.0f, -1.0f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f } },
+	{ { minPosition.x, maxPosition.y, minPosition.z }, { 0.0f, 0.0f, -1.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 1.0f } },
+	// Face arrière
+	{ { minPosition.x, minPosition.y, maxPosition.z }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f } },
+	{ { maxPosition.x, minPosition.y, maxPosition.z }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 0.0f } },
+	{ { maxPosition.x, maxPosition.y, maxPosition.z }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f } },
+	{ { minPosition.x, maxPosition.y, maxPosition.z }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 1.0f } },
 };
 
 
-// Indices for vertices order
-GLuint indices[] =
-{
-	0, 1, 2,
-	0, 2, 3,
-	0, 1, 4,
-	1, 2, 4,
-	2, 3, 4,
-	3, 0, 4
+
+std::vector<GLuint> cubeIndices = {
+	0, 1, 2, 2, 3, 0,   // Face avant
+	1, 5, 6, 6, 2, 1,   // Face droite
+	7, 6, 5, 5, 4, 7,   // Face arrière
+	4, 0, 3, 3, 7, 4,   // Face gauche
+	4, 5, 1, 1, 0, 4,   // Face inférieure
+	3, 2, 6, 6, 7, 3    // Face supérieure
 };
 
+std::vector<Texture> cubeTex = {
+};
 
 
 
@@ -90,7 +58,7 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Create a GLFWwindow object of 800 by 800 pixels, naming it "YoutubeOpenGL"
-	GLFWwindow* window = glfwCreateWindow(width, height, "TPs", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(width, height, "OpenGL App", NULL, NULL);
 	// Error check if the window fails to create
 	if (window == NULL)
 	{
@@ -104,118 +72,94 @@ int main()
 	//Load GLAD so it configures OpenGL
 	gladLoadGL();
 	// Specify the viewport of OpenGL in the Window
-	// In this case the viewport goes from x = 0, y = 0, to x = 800, y = 800
 	glViewport(0, 0, width, height);
+
 
 
 
 	// Generates Shader object using shaders default.vert and default.frag
 	Shader shaderProgram("default.vert", "default.frag");
+	Shader cubeShaderProgram("cube.vert", "cube.frag");
+
+	// Take care of all the light related things
+	glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	glm::vec3 lightPos = glm::vec3(0.5f, 0.5f, 0.5f);
+	glm::mat4 lightModel = glm::mat4(1.0f);
+	lightModel = glm::translate(lightModel, lightPos);
+
+	shaderProgram.Activate();
+	glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
+	glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
 
+	cubeShaderProgram.Activate();
+	//	Culling
+	glEnable(GL_CULL_FACE);
 
-	// Generates Vertex Array Object and binds it
-	VAO VAO1;
-	VAO1.Bind();
-
-
-	// Generates Vertex Buffer Object and links it to vertices
-	VBO VBO1(vertices, sizeof(vertices));
-	
-	// Generates Element Buffer Object and links it to indices
-	IBO IBO1(indices, sizeof(indices));
-
-
-	// Links VBO attributes such as coordinates and colors to VAO
-	VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
-	VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	VAO1.LinkAttrib(VBO1, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	// Unbind all to prevent accidentally modifying them
-	VAO1.Unbind();
-	VBO1.Unbind();
-	IBO1.Unbind();
-
-	// Gets ID of uniform called "scale"
-	GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
-
-
-	// Original code from the tutorial
-	Texture triforce("brick.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
-	triforce.texUnit(shaderProgram, "tex0", 0);
-
-	float rotation = 0.0f;
-	double prevTime = glfwGetTime();
-
+	// Enables the Depth Buffer
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 
-	//	Create a camera object
+	// Creates camera object
 	Camera camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
+
+	// paths to the file
+	std::string parentDir = (fs::current_path().fs::path::parent_path()).string();
+	std::string modelPath = "/OpenGLTPS/models/bunny/scene.gltf";
+
+	std::vector<Model> modelTab;
+	for (int i = 0; i < 20; i++)
+	{
+		modelTab.push_back(Model((parentDir + modelPath).c_str()));
+	}
+
+	Mesh cubeMesh(cubeVertices, cubeIndices, cubeTex);
+
+	
+	//	Parameters relative to the behaviors of bunnies
+	const float deltaTime = 0.1f;
+	const float protectedDist = 0.3f;
+	const float modifier = 0.1f;
+	const float maxSpeed = 0.7f;
+	const float centering = 0.2f;
+	
+
 
 	// Main while loop
 	while (!glfwWindowShouldClose(window))
 	{
 		// Specify the color of the background
-		glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
-		// Clean the back buffer and assign the new color to it
+		glClearColor(0.70f, 0.70f, 0.90f, 1.0f);
+		// Clean the back buffer and depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// Tell OpenGL which Shader Program we want to use
-		shaderProgram.Activate();
+
 
 		// Handles camera inputs
 		camera.Inputs(window);
 		// Updates and exports the camera matrix to the Vertex Shader
-		camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "uCam");
+		camera.updateMatrix(45.0f, 0.1f, 100.0f);
 
-		double currentTime = glfwGetTime();
-		if (currentTime - prevTime >= 1 / 60)
+
+		// Draw the cube
+		cubeMesh.Draw(cubeShaderProgram, camera);
+
+
+
+		// Draw a model
+		for (int i = 0; i < modelTab.size(); i++)
 		{
-			rotation += 0.5f;
-			prevTime = currentTime;
+
+			modelTab[i].update_Boid_position(deltaTime);
+			modelTab[i].separation(modelTab, protectedDist);
+			modelTab[i].alignment(modelTab, protectedDist, modifier, maxSpeed);
+			modelTab[i].cohesion(modelTab, protectedDist, centering);
+			modelTab[i].Draw(shaderProgram, camera, modelTab[i].get_position(), glm::vec3(i));
+			
 		}
 
-		//matrix initialization
-		glm::mat4 model = glm::mat4(1.0f);
-		glm::mat4 view = glm::mat4(1.0f);
-		glm::mat4 proj = glm::mat4(1.0f);
 
-		//rotate matrix applied to the model (i.e object)
-		model = glm::translate(model, glm::vec3(0, 0, 0));
-		model = glm::rotate(model, glm::radians(rotation/4.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		//model = glm::translate(model, glm::vec3(0, 0, 0));
-		model = glm::scale(model, glm::vec3(1.2, 1.2, 1.2));
-		//we move the "world" coordinates
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
-		//we can see object far from 0.1f to 100.0f to us
-		proj = glm::perspective(glm::radians(60.0f), (float)(800 / 800), 0.1f, 100.0f);
-
-		//import uniform variable from frag shader
-		int modelloc = glGetUniformLocation(shaderProgram.ID, "uModel");
-		glUniformMatrix4fv(modelloc, 1, GL_FALSE, glm::value_ptr(model));
-		int viewloc = glGetUniformLocation(shaderProgram.ID, "uView");
-		glUniformMatrix4fv(viewloc, 1, GL_FALSE, glm::value_ptr(view));
-		int projloc = glGetUniformLocation(shaderProgram.ID, "uProj");
-		glUniformMatrix4fv(projloc, 1, GL_FALSE, glm::value_ptr(proj));
-
-
-
-		// Assigns a value to the uniform; NOTE: Must always be done after activating the Shader Program
-		glUniform1f(uniID, 0.5f);
-		// Binds texture so that is appears in rendering
-		triforce.Bind();
-		// Bind the VAO so OpenGL knows to use it
-		VAO1.Bind();
-		// Draw primitives, number of indices, datatype of indices, index of indices
-		glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(int), GL_UNSIGNED_INT, 0);
-
-		//Call of the second object
-		model = glm::translate(model, glm::vec3(0, 0, 0));
-		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::translate(model, glm::vec3(1, 0, 0));
-		model = glm::scale(model, glm::vec3(0.2, 0.2, 0.2));
-		glUniformMatrix4fv(modelloc, 1, GL_FALSE, glm::value_ptr(model));
-
-		glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(int), GL_UNSIGNED_INT, 0);
-
+		// Switch back to the normal depth function
+		glDepthFunc(GL_LESS);
 
 		// Swap the back buffer with the front buffer
 		glfwSwapBuffers(window);
@@ -223,51 +167,12 @@ int main()
 		glfwPollEvents();
 	}
 
-
-
 	// Delete all the objects we've created
-	VAO1.Delete();
-	VBO1.Delete();
-	IBO1.Delete();
-	triforce.Delete();
 	shaderProgram.Delete();
+	cubeShaderProgram.Delete();
 	// Delete window before ending the program
 	glfwDestroyWindow(window);
 	// Terminate GLFW before ending the program
 	glfwTerminate();
 	return 0;
 }
-
-
-////rotate matrix function
-//glm::mat3 rotate(float a_radians)
-//{
-//	float c = cos(a_radians);
-//	float s = sin(a_radians);
-//
-//	glm::vec3 row1(c, s, 0.0f);
-//	glm::vec3 row2(-s, c, 0.0f);
-//	glm::vec3 row3(0.0f, 0.0f, 1.0f);
-//
-//	return glm::mat3(row1, row2, row3);
-//}
-//
-////translate matrix function
-//glm::mat3 translation(float tx, float ty)
-//{
-//	glm::vec3 row1(1, 0, tx);
-//	glm::vec3 row2(0, 1, ty);
-//	glm::vec3 row3(0, 0, 1);
-//
-//	return glm::mat3(row1, row2, row3);
-//}
-//
-////scale matrix function
-//glm::mat3 scale(float sx, float sy)
-//{
-//	glm::vec3 row1(sx, 0, 0);
-//	glm::vec3 row2(0, sy, 0);
-//	glm::vec3 row3(0, 0, 1);
-//
-//	return glm::mat3(row1, row2, row3);
-//}

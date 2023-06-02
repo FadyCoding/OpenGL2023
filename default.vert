@@ -1,64 +1,46 @@
 #version 330 core
 
-//Position
+// Positions/Coordinates
 layout (location = 0) in vec3 aPos;
+// Normals (not necessarily normalized)
+layout (location = 1) in vec3 aNormal;
+// Colors
+layout (location = 2) in vec3 aColor;
+// Texture Coordinates
+layout (location = 3) in vec2 aTex;
 
-//Colors
-layout (location = 1) in vec3 aColor;
 
-//Texture
-layout (location = 2) in vec2 aTex;
-
-//Outputs the color to the fragment shader
+// Outputs the current position for the Fragment Shader
+out vec3 crntPos;
+// Outputs the normal for the Fragment Shader
+out vec3 Normal;
+// Outputs the color for the Fragment Shader
 out vec3 color;
-
-//Outputs the texture coordinates to the fragment shader
+// Outputs the texture coordinates to the Fragment Shader
 out vec2 texCoord;
 
-//Transformations matrixes 
-uniform mat4 uModel;
-uniform mat4 uView;
-uniform mat4 uProj;
-uniform mat4 uCam;
+
+
+// Imports the camera matrix
+uniform mat4 camMatrix;
+// Imports the transformation matrices
+uniform mat4 model;
+uniform mat4 translation;
+uniform mat4 rotation;
+uniform mat4 scale;
+
 
 void main()
 {
-	//Outputs the position of all vertices
-    //gl_Position = uProj * uView * uModel *vec4(aPos, 1.0);
-	gl_Position = uCam *vec4(aPos, 1.0);
-
-   //Assigns the colors from the vertex data to color
-   color = aColor;
-
-   //Assigns the texture coordinates fromthe vertex data to texCoord
-   texCoord = aTex;
+	// calculates current position
+	crntPos = vec3(model * translation * -rotation * scale * vec4(aPos, 1.0f));
+	// Assigns the normal from the Vertex Data to "Normal"
+	Normal = aNormal;
+	// Assigns the colors from the Vertex Data to "color"
+	color = aColor;
+	// Assigns the texture coordinates from the Vertex Data to "texCoord"
+	texCoord = mat2(0.0, -1.0, 1.0, 0.0) * aTex;
+	
+	// Outputs the positions/coordinates of all vertices
+	gl_Position = camMatrix * vec4(crntPos, 1.0);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-//Variable that controls the time
-uniform float uTime;
-
-mat3 rotate(float a_degrees)
-{
-	float a_radians = radians(a_degrees);
-	float c = cos(a_radians);
-	float s = sin(a_radians);
-
-	return mat3(
-		vec3(c, s, 0.0f),
-		vec3(-s, c, 0.0f),
-		vec3(0.0f, 0.0f, 1.0f)
-	);
-}
-*/
